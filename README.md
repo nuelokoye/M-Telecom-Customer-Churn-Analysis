@@ -7,9 +7,14 @@ Firstly lets define what Churn is? Churn is the measurement of the percentage of
 Hence Churn rate is the rate at which customers stops doing business with a company. 
 
 The telecommunication industry is a highly competitive one and i carried out indept analysis using SQL to determine the following;
-How many customers joined the company during the last quarter? 
-What steps can M Telecom take to reduce churn?
-What are the key drivers of customer churn?
-Is the company losing high value customers? If so, how can they retain them?
-A churn profile showing the typical features of a customer susceptible to churn. 
+
+1. How many customers joined the company during the last quarter?
+
+2. What steps can M Telecom take to reduce churn?
+
+3. What are the key drivers of customer churn?
+
+4. Is the company losing high value customers? If so, how can they retain them?
+
+5. A churn profile showing the typical features of a customer susceptible to churn. 
 
