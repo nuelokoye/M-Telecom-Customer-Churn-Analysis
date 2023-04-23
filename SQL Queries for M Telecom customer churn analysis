@@ -1,38 +1,37 @@
 SELECT * FROM default_schema.churn;
 
--- Check for duplicates--
+-- a. Check for duplicates
 SELECT Customer_ID, COUNT( Customer_ID ) as count
 FROM  default_schema.churn
 GROUP BY Customer_ID
 HAVING count(Customer_ID) > 1;
 
--- Find total number of customers
+-- 1. Find total number of customers
 SELECT
 COUNT(DISTINCT Customer_ID) AS customer_count
-FROM default_schema.churn
-
--- Average Tenure in Months and Average Monthly Charges of customers--
-SELECT CEILING(AVG(Tenure_in_Months)) As Average_Tenure_in_Months,  CEILING(AVG(Monthly_Charge)) AS Average_Monthly_Charges
 FROM default_schema.churn;
 
--- How much revenue did maven lose to churned customers?
+-- 2. How much revenue did maven lose to churned customers?
 SELECT Customer_Status, 
-COUNT(Customer_ID) AS customer_count,
-ROUND((SUM(Total_Revenue) * 100.0) / SUM(SUM(Total_Revenue)) OVER(), 1) AS Revenue_Percentage 
+COUNT(Customer_ID) AS customer_count
 FROM default_schema.churn
 GROUP BY Customer_Status;
 
--- How much revenue has maven lost?
+-- 3. How much revenue has M Telecom lost to churn?
  SELECT 
   Customer_Status, 
-  CEILING(SUM(Total_Revenue)) AS Revenue,     -- ceiling is used to Round up the figures
+  CEILING(SUM(Total_Revenue)) AS Revenue, 
   ROUND((SUM(Total_Revenue) * 100.0) / SUM(SUM(Total_Revenue)) OVER(), 1) AS Revenue_Percentage
 FROM 
   default_schema.churn
-GROUP BY 
-  Customer_Status;
+GROUP BY Customer_status;
 
--- Typical tenure for churners
+
+-- 4. Average Tenure in Months and Average Monthly Charges of customers--
+SELECT CEILING(AVG(Tenure_in_Months)) AS Average_Tenure_in_Months,  CEILING(AVG(Monthly_Charge)) AS Average_Monthly_Charges
+FROM default_schema.churn;
+
+-- 5. Typical tenure for churners
 SELECT
     CASE 
         WHEN Tenure_in_Months <= 6 THEN '6 months'
@@ -55,7 +54,8 @@ GROUP BY
 ORDER BY
 Churn_Percentage DESC;
 
--- Which cities have the highest churn rates?
+
+-- 6. Which cities have the highest churn rates?
 SELECT City,
     COUNT(Customer_ID) AS Churned,
     CEILING(COUNT(CASE WHEN Customer_Status = 'Churned' THEN Customer_ID ELSE NULL END) * 100.0 / COUNT(Customer_ID)) AS Churn_Rate
@@ -71,7 +71,7 @@ ORDER BY
     Churn_Rate DESC 
     LIMIT 4; 
     
--- Why did customers leave?
+-- 7. Why did churners leave and how much did it cost?
 SELECT 
   Churn_Category,  
   ROUND(SUM(Total_Revenue),0)AS Churned_Rev,
@@ -85,7 +85,7 @@ GROUP BY
 ORDER BY 
   Churn_Percentage DESC;
   
--- Specific Reason why the customers left?
+-- 8. Specific Reason why the customers left?
 SELECT Churn_Reason, Churn_Category,  
   ROUND(COUNT(Customer_ID) * 100 / SUM(COUNT(Customer_ID)) OVER(), 1) AS Churn_Percentage
 FROM 
@@ -99,21 +99,7 @@ ORDER BY
   Churn_Percentage DESC
 LIMIT 5; 
 
--- why did churners leave and how much did it cost?
-SELECT 
-  Churn_Category,  
-  ROUND(SUM(Total_Revenue),0)AS Churned_Rev,
-  CEILING((COUNT(Customer_ID) * 100.0) / SUM(COUNT(Customer_ID)) OVER()) AS Churn_Percentage
-FROM 
-  default_schema.churn
-WHERE 
-    Customer_Status = 'Churned'
-GROUP BY 
-  Churn_Category
-ORDER BY 
-  Churn_Percentage DESC;
-
--- What offers did churners have?
+-- 9. What offers did churners have?
 SELECT
     Offer,
     ROUND(COUNT(Customer_ID) * 100.0 / SUM(COUNT(Customer_ID)) OVER(), 1) AS Churn_Percentage
@@ -127,7 +113,7 @@ ORDER BY
 Churn_Percentage DESC;
 
 
--- What Internet Type did churners have?
+-- 10.What Internet Type did churners have?
 SELECT
     Internet_Type,
     COUNT(Customer_ID) AS Churned,
@@ -141,7 +127,7 @@ Internet_Type
 ORDER BY 
 Churned DESC;
 
--- What Internet Type did 'Competitor' churners have?
+-- 11. What Internet Type did 'Competitor' churners have?
 SELECT
     Internet_Type,
     Churn_Category,
@@ -156,7 +142,7 @@ Internet_Type,
 Churn_Category
 ORDER BY Churn_Percentage DESC;
 
--- Did churners have premium tech support?
+-- 12.Did churners have premium tech support?
 SELECT 
     Premium_Tech_Support,
     COUNT(Customer_ID) AS Churned,
@@ -168,7 +154,7 @@ WHERE
 GROUP BY Premium_Tech_Support
 ORDER BY Churned DESC;
 
--- What contract were churners on?
+-- 13. What contract were churners on?
 SELECT 
     Contract,
     COUNT(Customer_ID) AS Churned,
@@ -182,9 +168,7 @@ GROUP BY
 ORDER BY 
     Churned DESC;
     
-    
-
--- HOW old were churners?
+-- 14. HOW old were churners?
 SELECT  
     CASE
         WHEN Age <= 30 THEN '19 - 30 yrs'
@@ -209,7 +193,8 @@ GROUP BY
 ORDER BY
 Churn_Percentage DESC;
 
--- What gender were churners?
+
+-- 15. What gender were churners?
 SELECT
     Gender,
     ROUND(COUNT(Customer_ID) *100.0 / SUM(COUNT(Customer_ID)) OVER(), 1) AS Churn_Percentage
@@ -222,7 +207,20 @@ GROUP BY
 ORDER BY
 Churn_Percentage DESC;
 
--- Did churners have dependents
+-- 16 Were churners married
+SELECT
+    Married,
+    ROUND(COUNT(Customer_ID) *100.0 / SUM(COUNT(Customer_ID)) OVER(), 1) AS Churn_Percentage
+FROM
+    default_schema.churn
+WHERE
+    Customer_Status = 'Churned'
+GROUP BY
+    Married
+ORDER BY
+Churn_Percentage DESC;
+
+-- 17 Did churners have dependents
 SELECT
     CASE
         WHEN Number_of_Dependents > 0 THEN 'Has Dependents'
@@ -241,21 +239,7 @@ CASE
     END
 ORDER BY Churn_Percentage DESC;
 
--- Were churners married
-SELECT
-    Married,
-    ROUND(COUNT(Customer_ID) *100.0 / SUM(COUNT(Customer_ID)) OVER(), 1) AS Churn_Percentage
-FROM
-    default_schema.churn
-WHERE
-    Customer_Status = 'Churned'
-GROUP BY
-    Married
-ORDER BY
-Churn_Percentage DESC;
-
-
--- Do churners have phone lines
+-- 18 . Do churners have phone lines
 SELECT
     Phone_Service,
     ROUND(COUNT(Customer_ID) * 100.0 / SUM(COUNT(Customer_ID)) OVER(), 1) AS Churned
@@ -264,10 +248,9 @@ FROM
 WHERE
     Customer_Status = 'Churned'
 GROUP BY 
-    Phone_Service
-
-
--- Do churners have internet service
+    Phone_Service;
+    
+-- 18.i  Do churners have internet service
 SELECT 
     Internet_Service,
     ROUND(COUNT(Customer_ID) * 100.0 / SUM(COUNT(Customer_ID)) OVER(), 1) AS Churned
@@ -276,9 +259,9 @@ FROM
 WHERE
     Customer_Status = 'Churned'
 GROUP BY 
-    Internet_Service
-    
--- Did they give referrals
+    Internet_Service;
+
+-- 19. Did they give referrals
 SELECT
     CASE
         WHEN Number_of_Referrals > 0 THEN 'Yes'
@@ -295,7 +278,7 @@ GROUP BY
         ELSE 'No'
     END;
 
--- Are high value customers at risk?
+-- 21. Are high value customers at risk?
 
 SELECT 
     CASE 
@@ -319,7 +302,7 @@ FROM
     WHERE 
         Monthly_Charge > 64 
         AND Customer_Status = 'Stayed'
-        AND Number_of_Referrals >=1
+        AND Number_of_Referrals >= 1
         AND Tenure_in_Months > 6
     GROUP BY 
         Customer_ID
